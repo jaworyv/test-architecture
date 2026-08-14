@@ -1,23 +1,24 @@
 import requests
 import pytest
+from src.main.api.models.login_user_request import LoginUserRequest
+from src.main.api.models.login_user_response import LoginUserResponse
 
 @pytest.mark.api
 class TestUserLogin:
     def test_login_admin(self):
-        login_admin_response = requests.post(
+        login_user_request = LoginUserRequest(username="admin", password="123456")
+        response = requests.post(
             url="http://localhost:4111/api/auth/token/login",
-            json={
-                "username": "admin",
-                "password": "123456"
-            },
+            json=login_user_request.model_dump(),
             headers={
                 "accept": "application/json",
                 "Content-Type": "application/json",
             }
         )
-        assert login_admin_response.status_code == 200
-        assert login_admin_response.json()["user"]["username"] == 'admin'
-        assert login_admin_response.json()["user"]["role"] == 'ROLE_ADMIN'
+        assert response.status_code == 200
+        login_user_response = LoginUserResponse(**response.json())
+        assert login_user_request.username == login_user_response.user.username
+        assert login_user_response.user.role == "ROLE_ADMIN"
 
     def test_login_user(self):
         login_admin_response = requests.post(
