@@ -1,7 +1,5 @@
 from http import HTTPStatus
-
 import requests
-
 from src.main.api.requests.requester import Requester
 from src.main.api.models.transfer_request import TransferRequest
 from src.main.api.models.transfer_response import TransferResponse
