@@ -9,29 +9,16 @@ from src.main.api.requests.create_user_requester import CreateUserRequester
 
 @pytest.mark.api
 class TestUserLogin:
-    def test_login_admin(self):
+    def test_login_admin(self, api_manager):
         login_user_request = LoginUserRequest(username="admin", password="123456")
-        response = LoginUserRequester(
-            request_spec=RequestSpecs.unauth_headers(),
-            response_spec=ResponseSpecs.request_ok(),
-        ).post(login_user_request)
+        response = api_manager.admin_steps.login_user(login_user_request)
 
         assert login_user_request.username == response.user.username
         assert response.user.role == "ROLE_ADMIN"
+    # --------------------------------------------------------
+    def test_login_user(self, api_manager, create_user_request):
+        response = api_manager.admin_steps.login_user(create_user_request)
 
-    def test_login_user(self):
-        create_user_request = CreateUserRequest(username="Blake12345", password="Pas!sw0rd", role="ROLE_USER")
-        CreateUserRequester(
-            request_spec=RequestSpecs.auth_headers(username="admin", password="123456"),
-            response_spec=ResponseSpecs.request_ok()
-        ).post(create_user_request)
-
-        login_user_request = LoginUserRequest(username="Blake12345", password="Pas!sw0rd")
-        response = LoginUserRequester(
-            request_spec=RequestSpecs.unauth_headers(),
-            response_spec=ResponseSpecs.request_ok(),
-        ).post(login_user_request)
-
-        assert login_user_request.username == response.user.username
+        assert create_user_request.username == response.user.username
         assert response.user.role == "ROLE_USER"
 
