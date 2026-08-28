@@ -1,12 +1,17 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Type
+
+from src.main.api.models.account_deposit_request import AccountDepositRequest
+from src.main.api.models.account_deposit_response import AccountDepositResponse
 from src.main.api.models.base_model import BaseModel
 from src.main.api.models.create_account_response import CreateAccountResponse
 from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.create_user_response import CreateUserResponse
 from src.main.api.models.login_user_request import LoginUserRequest
 from src.main.api.models.login_user_response import LoginUserResponse
+from src.main.api.models.transfer_request import TransferRequest
+from src.main.api.models.transfer_response import TransferResponse
 
 
 @dataclass
@@ -38,4 +43,16 @@ class Endpoint(Enum):
         request_model=None,
         url="/account/create",
         response_model=CreateAccountResponse
+    )
+
+    DEPOSIT_ACCOUNT = EndpointConfiguration(
+        request_model=AccountDepositRequest,
+        url="/account/deposit",
+        response_model=AccountDepositResponse
+    )
+
+    TRANSFER = EndpointConfiguration(
+        request_model=TransferRequest,
+        url="/account/transfer",
+        response_model=TransferResponse
     )
