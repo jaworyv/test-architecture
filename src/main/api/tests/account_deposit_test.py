@@ -21,7 +21,7 @@ class TestAccountDeposit:
         assert deposit_account_from_db.amount == account_deposit_request.amount
         balance_from_db = Account.get_account_by_id(db_session, response.id)
         assert balance_from_db.balance == response.balance
-# --------------------------------------------------------
+# ---------------------------------------------------------
     @pytest.mark.api
     @pytest.mark.parametrize("amount", [
         999,
