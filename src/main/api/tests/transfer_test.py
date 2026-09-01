@@ -1,20 +1,12 @@
 import pytest
-
 from src.main.api.models.account_deposit_request import AccountDepositRequest
-from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.transfer_request import TransferRequest
-from src.main.api.requests.account_deposit_requester import AccountDepositRequester
-from src.main.api.requests.create_account_requester import CreateAccountRequester
-from src.main.api.requests.create_user_requester import CreateUserRequester
-from src.main.api.requests.transfer_requester import TransferRequester
-from src.main.api.specs.request_specs import RequestSpecs
-from src.main.api.specs.response_specs import ResponseSpecs
-
+from src.main.api.db.crud.transaction_crud import TransactionCrudDb as Transaction
 
 
 class TestTransfer:
     @pytest.mark.api
-    def test_transfer_one_user(self, api_manager, create_user_request):
+    def test_transfer_one_user(self, api_manager, create_user_request, db_session):
         first_create_account = api_manager.user_steps.create_account(create_user_request)
         first_account_id = first_create_account.id
         second_create_account = api_manager.user_steps.create_account(create_user_request)
@@ -30,6 +22,11 @@ class TestTransfer:
         assert transfer_request.fromAccountId == response.fromAccountId
         assert transfer_request.toAccountId == response.toAccountId
         assert account_balance - transfer_request.amount == response.fromAccountIdBalance
+
+        transaction_from_db = Transaction.get_transaction_by_accounts(db_session, response.fromAccountId, response.toAccountId)
+        assert transaction_from_db.from_account_id == response.fromAccountId
+        assert transaction_from_db.to_account_id == response.toAccountId
+        assert transaction_from_db.amount == transfer_request.amount
 # --------------------------------------------------------
     @pytest.mark.api
     @pytest.mark.parametrize("amount", [

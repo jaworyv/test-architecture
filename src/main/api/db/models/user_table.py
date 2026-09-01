@@ -10,4 +10,4 @@ class User(Base):
     deleted_at = Column(DateTime, nullable=False)
 
     def __repr__(self):
-        return f'<User(id={self.id}, username={self.username}, role={self.role}, deleted_at={self.deleted_at})>'
+        return f'User(id={self.id}, username={self.username}, role={self.role}, deleted_at={self.deleted_at})'

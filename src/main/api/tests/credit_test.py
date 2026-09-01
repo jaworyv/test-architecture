@@ -1,16 +1,12 @@
 import pytest
-from src.main.api.models.create_user_request import CreateUserRequest
+from src.main.api.db.crud.credit_crud import CreditCrudDb as Credit
 from src.main.api.models.credit_request import CreditRequest
-from src.main.api.requests.create_account_requester import CreateAccountRequester
-from src.main.api.requests.create_user_requester import CreateUserRequester
-from src.main.api.requests.credit_requester import CreditRequester
-from src.main.api.specs.request_specs import RequestSpecs
-from src.main.api.specs.response_specs import ResponseSpecs
+
 
 
 class TestCredit:
     @pytest.mark.api
-    def test_credit(self, api_manager, create_credit_user_request):
+    def test_credit(self, api_manager, create_credit_user_request, db_session):
         create_account = api_manager.user_steps.create_account(create_credit_user_request)
         account_id = create_account.id
 
@@ -21,6 +17,12 @@ class TestCredit:
         assert credit_request.amount == response.amount
         assert credit_request.termMonths == response.termMonths
         assert credit_request.amount == response.balance
+
+        credit_from_db = Credit.get_credit_by_id(db_session, response.creditId)
+        assert credit_from_db.id == response.creditId
+        assert credit_from_db.account_id == account_id
+        assert credit_from_db.amount == credit_request.amount
+        assert credit_from_db.term_months == credit_request.termMonths
 # --------------------------------------------------------
     @pytest.mark.api
     @pytest.mark.parametrize("amount", [
