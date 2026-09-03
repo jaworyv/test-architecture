@@ -1,36 +1,35 @@
 import pytest
+from sqlalchemy.orm import Session
+
+from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.crud.account_crud import AccountCrudDb as Account
 from src.main.api.fixtures.db_fixture import db_session
 from src.main.api.models.account_deposit_request import AccountDepositRequest
 from src.main.api.db.crud.transaction_crud import TransactionCrudDb as Transaction
+from src.main.api.models.create_user_request import CreateUserRequest
 
 
 @pytest.mark.api
 class TestAccountDeposit:
-    def test_account_deposit(self, api_manager, create_user_request, db_session):
-        create_account = api_manager.user_steps.create_account(create_user_request)
-        account_id = create_account.id
-        account_deposit_request = AccountDepositRequest(accountId=account_id, amount=1000.5)
+    def test_account_deposit(self, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session, create_account_request):
+        account_deposit_request = AccountDepositRequest(accountId=create_account_request.id, amount=1000.5)
         response = api_manager.user_steps.account_deposit(create_user_request, account_deposit_request)
-
-        assert account_deposit_request.accountId == response.id
-        assert account_deposit_request.amount == response.balance
+        assert account_deposit_request.accountId == response.id, 'ОР: ID аккаунта в запросе = ID аккаунта в ответе, ФР: ID аккаунта в запросе != ID аккаунта в ответе'
+        assert account_deposit_request.amount == response.balance, 'ОР: Баланс в запросе = Баланс в ответе, ФР: Баланс в запросе != Баланс в ответе'
 
         deposit_account_from_db = Transaction().get_transaction_by_id(db_session, response.id)
-        assert deposit_account_from_db.to_account_id == response.id
-        assert deposit_account_from_db.amount == account_deposit_request.amount
+        assert deposit_account_from_db.to_account_id == response.id, 'ОР: ID аккаунта в БД = ID аккаунта в ответе, ФР: ID аккаунта в БД != ID аккаунта в ответе'
+        assert deposit_account_from_db.amount == account_deposit_request.amount, 'ОР: Сумма пополнения в БД = Сумма пополнения в ответе, ФР: Сумма пополнения в БД != Сумма пополнения в ответе'
         balance_from_db = Account.get_account_by_id(db_session, response.id)
-        assert balance_from_db.balance == response.balance
+        assert balance_from_db.balance == response.balance, 'ОР: Баланс в БД = Баланс в ответе, ФР: Баланс в БД != Баланс в ответе'
 # ---------------------------------------------------------
     @pytest.mark.api
     @pytest.mark.parametrize("amount", [
         999,
         9001
     ])
-    def test_account_deposit_invalid(self, amount, api_manager, create_user_request, db_session):
-        create_account = api_manager.user_steps.create_account(create_user_request)
-        account_id = create_account.id
-        account_deposit_request = AccountDepositRequest(accountId=account_id, amount=amount)
+    def test_account_deposit_invalid(self, amount, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session, create_account_request):
+        account_deposit_request = AccountDepositRequest(accountId=create_account_request.id, amount=amount)
         api_manager.user_steps.account_invalid_deposit(create_user_request, account_deposit_request)
-        balance_from_db = Account.get_account_by_id(db_session, account_id)
-        assert balance_from_db.balance == 0
+        balance_from_db = Account.get_account_by_id(db_session, create_account_request.id)
+        assert balance_from_db.balance == 0, 'ОР: Баланс в БД = 0, ФР: Баланс в БД != 0'
