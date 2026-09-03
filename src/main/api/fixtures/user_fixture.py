@@ -79,6 +79,12 @@ def credit_request(api_manager: ApiManager,create_credit_account_request, create
     return credit_response
 
 @pytest.fixture
+def invalid_credit_request(api_manager: ApiManager,create_credit_account_request, create_credit_user_request: CreateCreditUserRequest, credit_months: int):
+    credit_request = CreditRequest(accountId=create_credit_account_request.id, amount=5000, termMonths=credit_months)
+    credit_response = api_manager.user_steps.credit(credit_request, create_credit_user_request)
+    return credit_response
+
+@pytest.fixture
 def deposit_amount() -> float:
     return DataGenerator.deposit_amount()
 
