@@ -11,7 +11,7 @@ from src.main.api.db.crud.credit_crud import CreditCrudDb as Credit
 class TestCreditRepay:
     @pytest.mark.api
     def test_credit_repay(self, api_manager: ApiManager, create_credit_user_request: CreateUserRequest,db_session: Session, create_credit_account_request, credit_request: CreditRequest):
-        credit_repay_request = CreditRepayRequest(creditId=credit_request.creditId, accountId=create_credit_account_request.id, amount=5000)
+        credit_repay_request = CreditRepayRequest(creditId=credit_request.creditId, accountId=create_credit_account_request.id, amount=credit_request.amount)
         response = api_manager.user_steps.credit_repay(credit_repay_request, create_credit_user_request)
         assert credit_repay_request.creditId == response.creditId, 'ОР: ID кредита в запросе = ID кредита в ответе, ФР: ID кредита в запросе != ID кредита в ответе'
         assert credit_repay_request.amount == response.amountDeposited, 'ОР: Сумма пополнения в запросе = Сумма пополнения в ответе, ФР: Сумма пополнения в запросе != Сумма пополнения в ответе'

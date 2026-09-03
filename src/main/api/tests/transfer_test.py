@@ -10,8 +10,8 @@ from src.main.api.db.crud.transaction_crud import TransactionCrudDb as Transacti
 
 class TestTransfer:
     @pytest.mark.api
-    def test_transfer_one_user(self, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session, first_transfer_account, second_transfer_account):
-        transfer_request = TransferRequest(fromAccountId=first_transfer_account.id, toAccountId=second_transfer_account.id, amount=500)
+    def test_transfer_one_user(self, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session, first_transfer_account, second_transfer_account, transfer_amount: float):
+        transfer_request = TransferRequest(fromAccountId=first_transfer_account.id, toAccountId=second_transfer_account.id, amount=transfer_amount)
         response = api_manager.user_steps.transfer(transfer_request, create_user_request)
         assert transfer_request.fromAccountId == response.fromAccountId, 'ОР: Аккаунт откуда в запросе = Аккаунт откуда в ответе, ФР: Аккаунт откуда в запросе != Аккаунт откуда в ответе'
         assert transfer_request.toAccountId == response.toAccountId, 'ОР: Аккаунт куда в запросе = Аккаунт куда в ответе, ФР: Аккаунт куда в запросе != Аккаунт куда в ответе'
@@ -23,11 +23,12 @@ class TestTransfer:
         assert transaction_from_db.amount == transfer_request.amount, 'ОР: Сумма перевода в БД = Сумма перевода в ответе, ФР: Сумма перевода в БД != Сумма перевода в ответе'
 # --------------------------------------------------------
     @pytest.mark.api
-    @pytest.mark.parametrize("amount", [
-        499,
-        10001,
+    @pytest.mark.parametrize("amount, expected_error", [
+        (499, "Amount must be between 500 and 10000"),
+        (10001, "Amount must be between 500 and 10000")
     ])
-    def test_transfer_one_user_invalid(self, amount, api_manager: ApiManager, create_user_request: CreateUserRequest,invalid_first_transfer_account, invalid_second_transfer_account):
+    def test_transfer_one_user_invalid(self, amount, expected_error, api_manager: ApiManager, create_user_request: CreateUserRequest,invalid_first_transfer_account, invalid_second_transfer_account):
         transfer_request = TransferRequest(fromAccountId=invalid_first_transfer_account.id, toAccountId=invalid_second_transfer_account.id, amount=amount)
-        api_manager.user_steps.invalid_transfer(transfer_request, create_user_request)
+        response = api_manager.user_steps.invalid_transfer(transfer_request, create_user_request)
+        assert response.json()["error"] == expected_error
 

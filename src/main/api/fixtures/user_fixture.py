@@ -1,6 +1,7 @@
 import pytest
 
 from src.main.api.classes.api_manager import ApiManager
+from src.main.api.generators.data_generator import DataGenerator
 from src.main.api.generators.model_generator import RandomModelGenerator
 from src.main.api.models.account_deposit_request import AccountDepositRequest
 from src.main.api.models.create_user_request import CreateUserRequest, CreateCreditUserRequest
@@ -72,7 +73,23 @@ def invalid_second_transfer_account(invalid_transfer_accounts):
     return second_account
 
 @pytest.fixture
-def credit_request(api_manager: ApiManager,create_credit_account_request, create_credit_user_request: CreateCreditUserRequest):
-    credit_request = CreditRequest(accountId=create_credit_account_request.id, amount=5000, termMonths=12)
+def credit_request(api_manager: ApiManager,create_credit_account_request, create_credit_user_request: CreateCreditUserRequest, credit_amount: float, credit_months: int):
+    credit_request = CreditRequest(accountId=create_credit_account_request.id, amount=credit_amount, termMonths=credit_months)
     credit_response = api_manager.user_steps.credit(credit_request, create_credit_user_request)
     return credit_response
+
+@pytest.fixture
+def deposit_amount() -> float:
+    return DataGenerator.deposit_amount()
+
+@pytest.fixture
+def credit_amount() -> float:
+    return DataGenerator.credit_amount()
+
+@pytest.fixture
+def credit_months() -> float:
+    return DataGenerator.credit_months()
+
+@pytest.fixture
+def transfer_amount() -> float:
+    return DataGenerator.transfer_amount()

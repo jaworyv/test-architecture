@@ -9,8 +9,8 @@ from src.main.api.models.credit_request import CreditRequest
 
 class TestCredit:
     @pytest.mark.api
-    def test_credit(self, api_manager: ApiManager, create_credit_user_request: CreateUserRequest, db_session: Session, create_credit_account_request):
-        credit_request = CreditRequest(accountId=create_credit_account_request.id, amount=5000, termMonths=12)
+    def test_credit(self, api_manager: ApiManager, create_credit_user_request: CreateUserRequest, db_session: Session, create_credit_account_request, credit_amount: float, credit_months: int):
+        credit_request = CreditRequest(accountId=create_credit_account_request.id, amount=credit_amount, termMonths=credit_months)
         response = api_manager.user_steps.credit(credit_request, create_credit_user_request)
 
         assert credit_request.accountId == response.id, 'ОР: ID аккаунта в запросе = ID аккаунта в ответе, ФР: ID аккаунта в запросе != ID аккаунта в ответе'
@@ -25,10 +25,11 @@ class TestCredit:
         assert credit_from_db.term_months == credit_request.termMonths, 'ОР: Срок кредита в БД = Срок кредита в ответе, ФР: Срок кредита в БД != Срок кредита в ответе'
 # --------------------------------------------------------
     @pytest.mark.api
-    @pytest.mark.parametrize("amount", [
-        4999,
-        15001,
+    @pytest.mark.parametrize("amount, expected_error", [
+        (4999, "Amount must be between 5000 and 15000"),
+        (15001, "Amount must be between 5000 and 15000")
     ])
-    def test_credit_invalid(self,amount, api_manager: ApiManager, create_credit_user_request: CreateUserRequest, create_credit_account_request):
-        credit_request = CreditRequest(accountId=create_credit_account_request.id, amount=amount, termMonths=12)
-        api_manager.user_steps.invalid_credit(credit_request, create_credit_user_request)
+    def test_credit_invalid(self,amount, expected_error, api_manager: ApiManager, create_credit_user_request: CreateUserRequest, create_credit_account_request, credit_months: int):
+        credit_request = CreditRequest(accountId=create_credit_account_request.id, amount=amount, termMonths=credit_months)
+        response = api_manager.user_steps.invalid_credit(credit_request, create_credit_user_request)
+        assert response.json()["error"] == expected_error

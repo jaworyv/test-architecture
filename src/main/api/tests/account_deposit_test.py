@@ -11,8 +11,8 @@ from src.main.api.models.create_user_request import CreateUserRequest
 
 @pytest.mark.api
 class TestAccountDeposit:
-    def test_account_deposit(self, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session, create_account_request):
-        account_deposit_request = AccountDepositRequest(accountId=create_account_request.id, amount=1000.5)
+    def test_account_deposit(self, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session, create_account_request, deposit_amount: float):
+        account_deposit_request = AccountDepositRequest(accountId=create_account_request.id, amount=deposit_amount)
         response = api_manager.user_steps.account_deposit(create_user_request, account_deposit_request)
         assert account_deposit_request.accountId == response.id, 'ОР: ID аккаунта в запросе = ID аккаунта в ответе, ФР: ID аккаунта в запросе != ID аккаунта в ответе'
         assert account_deposit_request.amount == response.balance, 'ОР: Баланс в запросе = Баланс в ответе, ФР: Баланс в запросе != Баланс в ответе'
@@ -24,12 +24,14 @@ class TestAccountDeposit:
         assert balance_from_db.balance == response.balance, 'ОР: Баланс в БД = Баланс в ответе, ФР: Баланс в БД != Баланс в ответе'
 # ---------------------------------------------------------
     @pytest.mark.api
-    @pytest.mark.parametrize("amount", [
-        999,
-        9001
+    @pytest.mark.parametrize("amount, expected_error", [
+        (999, "Amount must be between 1000 and 9000"),
+        (9001, "Amount must be between 1000 and 9000")
     ])
-    def test_account_deposit_invalid(self, amount, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session, create_account_request):
+    def test_account_deposit_invalid(self, amount, expected_error, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session, create_account_request):
         account_deposit_request = AccountDepositRequest(accountId=create_account_request.id, amount=amount)
-        api_manager.user_steps.account_invalid_deposit(create_user_request, account_deposit_request)
+        response = api_manager.user_steps.account_invalid_deposit(create_user_request, account_deposit_request)
+        assert response.json()["error"] == expected_error
         balance_from_db = Account.get_account_by_id(db_session, create_account_request.id)
         assert balance_from_db.balance == 0, 'ОР: Баланс в БД = 0, ФР: Баланс в БД != 0'
+
