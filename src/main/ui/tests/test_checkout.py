@@ -1,15 +1,12 @@
-from playwright.sync_api import expect
-
-from src.main.ui.pages.basket_page import BasketPage
-from src.main.ui.pages.catalog_page import CatalogPage
-from src.main.ui.pages.checkout_page import CheckoutPage
-from src.main.ui.pages.login_page import LoginPage
+from src.main.ui.steps.basket_steps import BasketSteps
+from src.main.ui.steps.catalog_steps import CatalogSteps
+from src.main.ui.steps.checkout_steps import CheckoutSteps
 
 
 def test_checkout_multiple_items(page):
-    catalog = CatalogPage(page)
-    basket = BasketPage(page)
-    checkout = CheckoutPage(page)
+    catalog = CatalogSteps(page)
+    basket = BasketSteps(page)
+    checkout = CheckoutSteps(page)
 
     catalog .login("standard_user", "secret_sauce")
     catalog.add_to_cart('Sauce Labs Fleece Jacket')
@@ -19,7 +16,7 @@ def test_checkout_multiple_items(page):
     basket.expect_item_in_cart('Sauce Labs Fleece Jacket')
     basket.expect_item_in_cart('Sauce Labs Bolt T-Shirt')
     basket_total = basket.get_items_total_price()
-    basket.checkout()
+    basket.checkout_button()
 
     checkout.start_checkout("John", "Red", "125505")
     checkout_price_without_tax = checkout.get_item_total_after_continue()
@@ -32,9 +29,9 @@ def test_checkout_multiple_items(page):
     assert checkout.get_success_text() == 'Thank you for your order!'
 
 def test_checkout_without_items(page):
-    catalog = CatalogPage(page)
-    basket = BasketPage(page)
-    checkout = CheckoutPage(page)
+    catalog = CatalogSteps(page)
+    basket = BasketSteps(page)
+    checkout = CheckoutSteps(page)
 
     catalog .login("standard_user", "secret_sauce")
     catalog.add_to_cart('Sauce Labs Fleece Jacket')
@@ -43,7 +40,7 @@ def test_checkout_without_items(page):
     basket.open_cart()
     basket.expect_item_in_cart('Sauce Labs Fleece Jacket')
     basket.expect_item_in_cart('Sauce Labs Bolt T-Shirt')
-    basket.checkout()
+    basket.checkout_button()
 
     checkout.start_checkout("John", "Red", "")
     assert checkout.get_error_text() == 'Error: Postal Code is required'
