@@ -1,0 +1,7 @@
+pytest~=9.1.1
+SQLAlchemy~=2.0.52
+pydantic~=2.13.4
+allure-python-commons~=2.16.0
+playwright~=1.62.0
+requests~=2.34.2
+rstr~=3.2.2
