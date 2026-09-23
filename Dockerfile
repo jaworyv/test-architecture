@@ -1,11 +1,9 @@
 FROM mcr.microsoft.com/playwright/python:latest
 
+#ARG BACKEND_URL=http://host.docker.iternal:4111/api
 
-ARG TEST_PROFILE=api
-ARG BACKEND_URL=http://host.docker.iternal:4111/api
-
-ENV TEST_PROFILE=${TEST_PROFILE}
-ENV BACKEND_URL=${BACKEND_URL}
+ENV TEST_PROFILE=api
+#ENV BACKEND_URL=${BACKEND_URL}
 
 WORKDIR /app
 
@@ -15,4 +13,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD pytest -m api --alluredir=/app/reports/allure
+CMD ["sh", "-c", "pytest -m \"$TEST_PROFILE\" --alluredir=/app/reports/allure"]

@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Any
+import os
 
 class Config:
     _instance = None
@@ -24,4 +25,17 @@ class Config:
 
     @staticmethod
     def fetch(key: str, default_value: Any = None) -> Any:
-        return Config()._dictionary.get(key, default_value)
+        config = Config()
+
+        env_key = {
+            "backendUrl": "BACKEND_URL",
+            "dataBaseUrl": "DATABASE_URL",
+        }.get(key)
+
+        if env_key:
+            env_value = os.getenv(env_key)
+
+            if env_value is not None:
+                return env_value
+
+        return config._dictionary.get(key, default_value)
